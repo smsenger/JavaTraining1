@@ -1,54 +1,52 @@
-package com.homework.Feed.Training.filemover;
+package com.homework.Feed.Training.archivefolder;
 
-import com.homework.Feed.Training.readfile.ReadFile;
+
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+
 @Slf4j
 @Component
-public class FileMover {
-    @Autowired
-    ReadFile readFile;
-
-    @Value("${input.file.folder}")
-    private Path associateFolder;
+public class ArchiveFolder {
 
     @Value("${processing.file.folder}")
     private Path associateProcessingFolder;
 
+    @Value("${archive.file.folder}")
+    private Path archiveFolder;
 
-    public void folderOpener() {
+
+    public void openProcessing() {
         try {
-            Long countFiles = Files.walk(associateFolder).count();
+            Long countFiles = Files.walk(associateProcessingFolder).count();
             if(countFiles <= 1) {
                 log.debug("No files in folder");
             } else {
-                fileMover();
+                archiveMove();
             }
         }
         catch (IOException e) {
             e.printStackTrace();
         }
-//        readFile.readFile();
     }
 
-    public void fileMover() {
+    public void archiveMove() {
         try {
-            Files.createDirectories(associateProcessingFolder);
-            Files.walk(associateFolder).filter(f -> f.toString().endsWith(".csv"))
+            Files.createDirectories(archiveFolder);
+            Files.walk(associateProcessingFolder).filter(f -> f.toString().endsWith(".csv"))
                     .forEach(f -> {
-                        Path destination = associateProcessingFolder.resolve(associateFolder.relativize(f));
+                        Path destination = archiveFolder.resolve(associateProcessingFolder.relativize(f));
 
                         try {
                             Files.createDirectories(destination.getParent());
                             Files.move(f, destination);
-                            readFile.readFile();
+                            log.debug("File moved to archive folder");
                         } catch (IOException i) {
                             i.printStackTrace();
                         }
@@ -57,4 +55,8 @@ public class FileMover {
             e.printStackTrace();
         }
     }
+
+
+
+
 }
